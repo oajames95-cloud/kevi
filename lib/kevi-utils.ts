@@ -23,21 +23,42 @@ export const formatCurrency = fmtCurrency
 // ─── Domain categorisation ────────────────────────────────────────────────────
 
 export const DOMAIN_CATEGORIES: Record<string, string> = {
+  // Prospecting
   'app.apollo.io': 'prospecting',
   'apollo.io': 'prospecting',
   'salesnav.linkedin.com': 'prospecting',
+  'sales.linkedin.com': 'prospecting',
+  'seamless.ai': 'prospecting',
+  'zoominfo.com': 'prospecting',
+  'lusha.com': 'prospecting',
+  'hunter.io': 'prospecting',
+  // Outreach
   'linkedin.com': 'outreach',
   'mail.google.com': 'outreach',
+  'gmail.com': 'outreach',
   'outlook.live.com': 'outreach',
   'outlook.office.com': 'outreach',
+  'outlook.office365.com': 'outreach',
+  'mail.yahoo.com': 'outreach',
+  // CRM
   'app.hubspot.com': 'crm',
   'salesforce.com': 'crm',
   'lightning.force.com': 'crm',
+  'crm.zoho.com': 'crm',
+  'pipedrive.com': 'crm',
+  'close.com': 'crm',
+  // Meetings
   'zoom.us': 'meetings',
   'meet.google.com': 'meetings',
   'calendar.google.com': 'meetings',
+  'teams.microsoft.com': 'meetings',
+  'calendly.com': 'meetings',
+  'chili.piper.com': 'meetings',
+  // Comms
   'slack.com': 'comms',
   'teams.microsoft.com': 'comms',
+  'discord.com': 'comms',
+  'web.whatsapp.com': 'comms',
 }
 
 export function categorise(domain: string): string {
