@@ -48,14 +48,16 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
       <Breadcrumb>
         <BreadcrumbList>
           {breadcrumbs.map((crumb, index) => (
-            <BreadcrumbItem key={crumb.href}>
+            <span key={crumb.href} className="contents">
               {index > 0 && <BreadcrumbSeparator />}
-              {crumb.isLast ? (
-                <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
-              )}
-            </BreadcrumbItem>
+              <BreadcrumbItem>
+                {crumb.isLast ? (
+                  <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink href={crumb.href}>{crumb.label}</BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+            </span>
           ))}
         </BreadcrumbList>
       </Breadcrumb>
