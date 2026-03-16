@@ -38,9 +38,10 @@ export function MarketingNav({ cancelLabel, onCancel }: MarketingNavProps) {
       <header
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
         style={{
-          backgroundColor: scrolled ? 'rgba(0, 0, 0, 0.6)' : 'transparent',
-          backdropFilter: scrolled ? 'blur(20px)' : 'none',
-          WebkitBackdropFilter: scrolled ? 'blur(20px)' : 'none',
+          backgroundColor: scrolled ? 'rgba(8, 12, 10, 0.75)' : 'transparent',
+          backdropFilter: scrolled ? 'blur(24px)' : 'none',
+          WebkitBackdropFilter: scrolled ? 'blur(24px)' : 'none',
+          borderBottom: scrolled ? '1px solid rgba(255, 255, 255, 0.06)' : 'none',
         }}
       >
         <div className="max-w-7xl mx-auto px-6">
@@ -113,7 +114,7 @@ export function MarketingNav({ cancelLabel, onCancel }: MarketingNavProps) {
         </div>
 
         {!cancelLabel && mobileOpen && (
-          <div className="md:hidden border-t border-white/10 bg-black/90 backdrop-blur-xl px-6 py-4 flex flex-col gap-1">
+          <div className="md:hidden border-t border-white/10 bg-[rgba(8,12,10,0.95)] backdrop-blur-xl px-6 py-4 flex flex-col gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.label}

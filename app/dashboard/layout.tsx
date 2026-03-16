@@ -28,8 +28,15 @@ export default async function DashboardLayout({
       <DashboardSidebar user={user} rep={rep} />
       <SidebarInset>
         <DashboardHeader user={user} />
-        <div className="flex-1 overflow-auto">
-          {children}
+        <div className="flex-1 overflow-auto relative">
+          {/* Subtle ambient glow for dashboard */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute top-[-5%] right-[10%] w-[400px] h-[300px] bg-emerald-600/10 rounded-full blur-[100px]" />
+            <div className="absolute bottom-[10%] left-[5%] w-[300px] h-[300px] bg-teal-600/8 rounded-full blur-[80px]" />
+          </div>
+          <div className="relative z-10">
+            {children}
+          </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
