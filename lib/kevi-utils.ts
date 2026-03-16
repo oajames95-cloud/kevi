@@ -153,3 +153,150 @@ export function formatTimeAgo(date: string | null): string {
   if (secs < 3600) return `${Math.floor(secs / 60)}m ago`
   return `${Math.floor(secs / 3600)}h ago`
 }
+
+// ─── Focus blocks ─────────────────────────────────────────────────────────────
+
+export interface FocusBlock {
+  domain: string
+  category: string
+  startTime: string
+  endTime: string
+  durationSecs: number
+}
+
+export function calcFocusBlocks(events: any[]): FocusBlock[] {
+  const blocks: FocusBlock[] = []
+  if (!events.length) return blocks
+
+  let current = { ...events[0], startTime: events[0].recorded_at }
+
+  for (let i = 1; i < events.length; i++) {
+    const e = events[i]
+    const gapSecs = (new Date(e.recorded_at).getTime() - new Date(events[i - 1].recorded_at).getTime()) / 1000
+    const domainChanged = e.domain !== current.domain
+
+    if (domainChanged || gapSecs > 300) {
+      blocks.push({
+        domain: current.domain,
+        category: current.category,
+        startTime: current.startTime,
+        endTime: events[i - 1].recorded_at,
+        durationSecs: (new Date(events[i - 1].recorded_at).getTime() - new Date(current.startTime).getTime()) / 1000,
+      })
+      current = { ...e, startTime: e.recorded_at }
+    }
+  }
+
+  // Don't forget the last block
+  if (current) {
+    blocks.push({
+      domain: current.domain,
+      category: current.category,
+      startTime: current.startTime,
+      endTime: events[events.length - 1].recorded_at,
+      durationSecs: (new Date(events[events.length - 1].recorded_at).getTime() - new Date(current.startTime).getTime()) / 1000,
+    })
+  }
+
+  return blocks
+}
+
+// ─── Daily scorecard calculation ───────────────────────────────────────────────
+
+export interface ScorecardComponents {
+  activeScore: number
+  prospectingScore: number
+  focusScore: number
+  keystrokeScore: number
+}
+
+export function calcDailyScore(
+  totalActiveSecs: number,
+  prospectingSecs: number,
+  longestBlockMins: number,
+  keystrokesPerHour: number
+): { score: number; components: ScorecardComponents } {
+  const activeScore = Math.min(totalActiveSecs / 21600, 1) * 100
+  const prospectScore = totalActiveSecs > 0 ? Math.min((prospectingSecs / totalActiveSecs) / 0.35, 1) * 100 : 0
+  const focusScore = Math.min(longestBlockMins / 45, 1) * 100
+  const intensityScore = Math.min(keystrokesPerHour / 800, 1) * 100
+
+  return {
+    score: Math.round(activeScore * 0.35 + prospectScore * 0.25 + focusScore * 0.2 + intensityScore * 0.2),
+    components: {
+      activeScore: Math.round(activeScore),
+      prospectingScore: Math.round(prospectScore),
+      focusScore: Math.round(focusScore),
+      keystrokeScore: Math.round(intensityScore),
+    },
+  }
+}
+
+// ─── Coaching flags detection ──────────────────────────────────────────────────
+
+export interface CoachingFlag {
+  type: string
+  severity: 'red' | 'amber' | 'green'
+  description: string
+}
+
+export interface WeekStats {
+  totalSecs: number
+  prospectingSecs: number
+  outreachSecs: number
+  totalKeystrokes: number
+}
+
+export interface DayPattern {
+  date: string
+  firstActivityHour: number
+}
+
+export function detectFlags(
+  thisWeek: WeekStats,
+  lastWeek: WeekStats,
+  dailyPatterns: DayPattern[]
+): CoachingFlag[] {
+  const flags: CoachingFlag[] = []
+
+  // Activity cliff (Red)
+  if (lastWeek.totalSecs > 0 && thisWeek.totalSecs / lastWeek.totalSecs < 0.6) {
+    flags.push({
+      type: 'ACTIVITY_CLIFF',
+      severity: 'red',
+      description: `Active time dropped ${Math.round((1 - thisWeek.totalSecs / lastWeek.totalSecs) * 100)}% vs last week`,
+    })
+  }
+
+  // Wrong tools (Red)
+  const salesToolPct = (thisWeek.prospectingSecs + thisWeek.outreachSecs) / (thisWeek.totalSecs || 1)
+  if (salesToolPct < 0.1) {
+    flags.push({
+      type: 'WRONG_TOOLS',
+      severity: 'red',
+      description: `Only ${Math.round(salesToolPct * 100)}% of time in prospecting/outreach tools`,
+    })
+  }
+
+  // Passive browsing (Red)
+  const keysPerMin = thisWeek.totalKeystrokes / ((thisWeek.totalSecs || 1) / 60)
+  if (keysPerMin < 3 && thisWeek.totalSecs > 7200) {
+    flags.push({
+      type: 'PASSIVE_BROWSING',
+      severity: 'red',
+      description: `Active ${fmtTime(thisWeek.totalSecs)} but only ${Math.round(keysPerMin)} keystrokes/min — passive browsing`,
+    })
+  }
+
+  // Late starts (Amber)
+  const lateStartDays = dailyPatterns.filter((d) => d.firstActivityHour > 10).length
+  if (lateStartDays >= 3) {
+    flags.push({
+      type: 'LATE_STARTS',
+      severity: 'amber',
+      description: `Inactive before 10am on ${lateStartDays} of the last 5 working days`,
+    })
+  }
+
+  return flags
+}

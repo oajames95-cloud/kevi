@@ -44,6 +44,10 @@ import {
   LogOut,
   ChevronsUpDown,
   Radio,
+  Award,
+  GitCompare,
+  Zap,
+  AlertCircle,
 } from 'lucide-react'
 import { Rep, Company } from '@/lib/types'
 import { KeviLogo } from '@/components/kevi-logo'
@@ -55,30 +59,15 @@ interface DashboardSidebarProps {
 
 const navSections = [
   {
-    title: 'Productivity',
-    icon: Activity,
-    basePath: '/dashboard/productivity',
+    title: 'Analytics',
     items: [
-      { title: 'Team Overview', href: '/dashboard/productivity/team' },
-      { title: 'Individual', href: '/dashboard/productivity/individual' },
-    ],
-  },
-  {
-    title: 'Performance',
-    icon: TrendingUp,
-    basePath: '/dashboard/performance',
-    items: [
-      { title: 'Team Overview', href: '/dashboard/performance/team' },
-      { title: 'Individual', href: '/dashboard/performance/individual' },
-    ],
-  },
-  {
-    title: 'Conversion',
-    icon: Target,
-    basePath: '/dashboard/conversion',
-    items: [
-      { title: 'Team Overview', href: '/dashboard/conversion/team' },
-      { title: 'Individual', href: '/dashboard/conversion/individual' },
+      { title: 'Productivity', href: '/dashboard/productivity/team', icon: Activity },
+      { title: 'Performance', href: '/dashboard/performance/team', icon: TrendingUp },
+      { title: 'Conversion', href: '/dashboard/conversion/team', icon: Target },
+      { title: 'Scorecards', href: '/dashboard/scorecards', icon: Award },
+      { title: 'Focus', href: '/dashboard/focus', icon: Zap },
+      { title: 'Comparison', href: '/dashboard/comparison', icon: GitCompare },
+      { title: 'Coaching', href: '/dashboard/coaching', icon: AlertCircle },
     ],
   },
 ]
@@ -112,36 +101,20 @@ export function DashboardSidebar({ user, rep }: DashboardSidebarProps) {
           <SidebarGroupLabel>Analytics</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navSections.map((section) => {
-                const isOpen = pathname.startsWith(section.basePath)
-                return (
-                  <Collapsible key={section.title} defaultOpen={isOpen} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton tooltip={section.title}>
-                          <section.icon className="h-4 w-4" />
-                          <span>{section.title}</span>
-                          <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {section.items.map((item) => (
-                            <SidebarMenuSubItem key={item.href}>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={pathname === item.href}
-                              >
-                                <Link href={item.href}>{item.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                )
-              })}
+              {navSections[0].items.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === item.href}
+                    tooltip={item.title}
+                  >
+                    <Link href={item.href}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -228,6 +228,67 @@ export type DatePeriod = {
   label: string
 }
 
+// Scorecard types
+export interface ScorecardData {
+  repId: string
+  name: string
+  scores: Array<{
+    date: string
+    score: number
+    components: {
+      activeScore: number
+      prospectingScore: number
+      focusScore: number
+      keystrokeScore: number
+    }
+  }>
+}
+
+export interface CoachingFlagData {
+  repId: string
+  name: string
+  flags: Array<{
+    type: string
+    severity: 'red' | 'amber' | 'green'
+    description: string
+    sparklineData?: number[]
+  }>
+}
+
+export interface ComparisonData {
+  repA: {
+    id: string
+    name: string
+    stats: Record<string, number>
+  }
+  repB: {
+    id: string
+    name: string
+    stats: Record<string, number>
+  }
+  differences: Record<string, { pct: number; winner: 'A' | 'B' | 'equal' }>
+  dailyScores: Array<{
+    date: string
+    scoreA: number
+    scoreB: number
+  }>
+}
+
+export interface HeatmapData {
+  repId: string
+  name: string
+  grid: Array<{
+    day: number // 0-6 Mon-Sun
+    hour: number // 8-20
+    seconds: number
+  }>
+  insights: {
+    peakHour: string
+    quietestPeriod: string
+    mostConsistent: string
+  }
+}
+
 // API request/response types
 export interface ExtensionEventPayload {
   events: Array<{
