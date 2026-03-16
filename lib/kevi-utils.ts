@@ -145,3 +145,10 @@ export const BUCKETS: Record<string, {
   comms:       { label: 'Internal',    color: '#fb923c', tailwind: 'bg-orange-400',  light: 'bg-orange-50',   text: 'text-orange-700'  },
   downtime:    { label: 'Downtime',    color: '#d1d5db', tailwind: 'bg-gray-300',    light: 'bg-gray-50',     text: 'text-gray-500'    },
 }
+export function formatTimeAgo(date: string | null): string {
+  if (!date) return 'Never'
+  const secs = Math.round((Date.now() - new Date(date).getTime()) / 1000)
+  if (secs < 60) return `${secs}s ago`
+  if (secs < 3600) return `${Math.floor(secs / 60)}m ago`
+  return `${Math.floor(secs / 3600)}h ago`
+}
