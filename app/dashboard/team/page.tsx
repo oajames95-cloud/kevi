@@ -20,7 +20,7 @@ import { Field, FieldGroup, FieldLabel } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
 import { Rep } from '@/lib/types'
 import { formatTimeAgo } from '@/lib/kevi-utils'
-import { Users, Plus, Copy, CheckCircle, XCircle } from 'lucide-react'
+import { Users, Plus, CheckCircle, XCircle } from 'lucide-react'
 import { toast } from 'sonner'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -62,11 +62,6 @@ export default function TeamPage() {
     }
   }
 
-  const copyToken = (token: string) => {
-    navigator.clipboard.writeText(token)
-    toast.success('Extension token copied to clipboard')
-  }
-
   const activeReps = reps.filter((r) => {
     if (!r.last_seen_at) return false
     const lastSeen = new Date(r.last_seen_at)
@@ -92,7 +87,7 @@ export default function TeamPage() {
             <DialogHeader>
               <DialogTitle>Add New Rep</DialogTitle>
               <DialogDescription>
-                Add a new sales rep to your team. They will receive an extension token to connect their browser.
+                Add a new sales rep to your team. They can sign in to the Chrome extension with their email and password.
               </DialogDescription>
             </DialogHeader>
             <FieldGroup>
@@ -221,16 +216,6 @@ export default function TeamPage() {
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => copyToken(rep.extension_token)}
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy Token
-                      </Button>
-                    </div>
                   </div>
                 )
               })}
@@ -247,10 +232,9 @@ export default function TeamPage() {
         </CardHeader>
         <CardContent>
           <ol className="list-decimal list-inside space-y-2 text-sm text-muted-foreground">
-            <li>Have the rep install the Kevi.io Chrome extension from the Chrome Web Store</li>
-            <li>Click {"\"Copy Token\""} next to their name above</li>
-            <li>In the extension, click Settings and paste the token</li>
-            <li>The extension will automatically start tracking activity</li>
+            <li>Have the rep install the KEV.io Chrome extension from the Chrome Web Store</li>
+            <li>Open the extension and sign in with their email and password</li>
+            <li>The extension will automatically connect and start tracking activity</li>
           </ol>
         </CardContent>
       </Card>
