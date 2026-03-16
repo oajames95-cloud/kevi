@@ -52,15 +52,18 @@ export async function GET() {
     // Map statuses to reps
     const statusMap = new Map(statuses?.map(s => [s.rep_id, s]) || [])
     
-    // Check for stale heartbeats (> 3 min = offline)
+    // Only override status to offline if heartbeat is very stale (> 5 min)
+    // Otherwise trust the status field from rep_status table
     const now = new Date()
     const repsWithStatus = reps?.map(rep => {
       let status = statusMap.get(rep.id) || null
       
-      // Mark as offline if heartbeat is stale
+      // Only mark as offline if:
+      // 1. status is explicitly 'offline' in DB, OR
+      // 2. last_heartbeat_at is more than 5 minutes ago
       if (status?.last_heartbeat_at) {
         const heartbeatAge = (now.getTime() - new Date(status.last_heartbeat_at).getTime()) / 1000
-        if (heartbeatAge > 180) {
+        if (status.status === 'offline' || heartbeatAge > 300) {
           status = { ...status, status: 'offline' }
         }
       }

@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import type { RepWithStatus, LiveViewData } from '@/lib/types'
 import { formatDuration } from '@/lib/kevi-utils'
 
-const REFRESH_INTERVAL = 10000 // 10 seconds
+const REFRESH_INTERVAL = 15000 // 15 seconds
 
 export default function LiveViewPage() {
   const [data, setData] = useState<LiveViewData | null>(null)
