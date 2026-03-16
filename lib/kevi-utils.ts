@@ -17,6 +17,9 @@ export function fmtCurrency(n: number): string {
   }).format(n)
 }
 
+// Alias used by dashboard pages
+export const formatCurrency = fmtCurrency
+
 export const DOMAIN_CATEGORIES: Record<string, string> = {
   'app.apollo.io': 'prospecting',
   'apollo.io': 'prospecting',
@@ -41,6 +44,9 @@ export function categorise(domain: string): string {
   }
   return 'downtime'
 }
+
+// Alias used by API routes
+export const categorizeDomain = categorise
 
 // Productivity bucket config
 export const BUCKETS: Record<string, { 
@@ -158,6 +164,23 @@ export const PERIOD_DAYS: Record<string, number> = {
 }
 
 export type Period = '1d' | '7d' | '30d' | '180d'
+
+export function getPeriodDates(period: Period): { since: string; label: string } {
+  const days: Record<Period, number> = {
+    '1d': 1,
+    '7d': 7,
+    '30d': 30,
+    '180d': 180,
+  }
+  const labels: Record<Period, string> = {
+    '1d': 'Today',
+    '7d': 'Last 7 days',
+    '30d': 'Last 30 days',
+    '180d': 'Last 6 months',
+  }
+  const since = new Date(Date.now() - days[period] * 86400000).toISOString()
+  return { since, label: labels[period] }
+}
 
 // Format relative time ago (e.g., "5m ago", "2h ago")
 export function formatTimeAgo(date: string | Date | null): string {
