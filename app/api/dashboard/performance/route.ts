@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
   const repId = searchParams.get('rep_id')
   const view = searchParams.get('view') || 'team'
 
-  const { start, end } = getPeriodDates(period)
+  const { since, label } = getPeriodDates(period as '1d' | '7d' | '30d' | '180d')
+  const start = since
+  const end = new Date().toISOString()
 
   if (view === 'individual' && repId) {
     // Individual view - get CRM events and activity correlation
