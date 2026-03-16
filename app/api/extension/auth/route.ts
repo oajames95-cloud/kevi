@@ -1,58 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient } from '@supabase/supabase-js'
 
-// POST /api/extension/auth - Authenticate extension with email/password and return extension token
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const { email, password } = body
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      )
-    }
+export async function GET(req: NextRequest) {
+  // Extension sends the Supabase access token in Authorization header
+  const authHeader = req.headers.get('authorization') ?? ''
+  const accessToken = authHeader.replace('Bearer ', '').trim()
 
-    const supabase = await createClient()
-
-    // Sign in with Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (authError || !authData.user) {
-      return NextResponse.json(
-        { error: 'Invalid email or password' },
-        { status: 401 }
-      )
-    }
-
-    // Get the rep record with the extension token
-    const { data: rep, error: repError } = await supabase
-      .from('reps')
-      .select('id, name, extension_token')
-      .eq('supabase_user_id', authData.user.id)
-      .single()
-
-    if (repError || !rep) {
-      return NextResponse.json(
-        { error: 'Rep profile not found' },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      extension_token: rep.extension_token,
-      name: rep.name,
-    })
-  } catch (error) {
-    console.error('Extension auth error:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+  if (!accessToken) {
+    return NextResponse.json({ error: 'Unauthorised' }, { status: 401 })
   }
+
+  // Verify the token with Supabase
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(accessToken)
+
+  if (error || !user) {
+    return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
+  }
+
+  // Look up the rep by email
+  const { data: rep, error: repError } = await supabaseAdmin
+    .from('reps')
+    .select('id, extension_token, name')
+    .eq('email', user.email)
+    .single()
+
+  if (repError || !rep) {
+    return NextResponse.json({ error: 'Rep not found — make sure your account is set up' }, { status: 404 })
+  }
+
+  return NextResponse.json({
+    extensionToken: rep.extension_token,
+    repName: rep.name,
+  })
 }
