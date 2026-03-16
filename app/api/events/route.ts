@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { categorizeDomain } from '@/lib/kevi-utils'
+import { categorise as categorizeDomain } from '@/lib/kevi-utils'
 
 // POST /api/events - Ingest activity events from Chrome extension
 export async function POST(request: NextRequest) {
