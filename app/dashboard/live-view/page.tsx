@@ -419,3 +419,7 @@ export default function LiveViewPage() {
             </CardContent>
           </Card>
         )}
+      </div>
+    </TooltipProvider>
+  )
+}
