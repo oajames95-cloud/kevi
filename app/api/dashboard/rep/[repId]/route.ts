@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { calcDailyScore, calcFocusBlocks, detectFlags } from '@/lib/kevi-utils'
+// Rep profile API route
 
 export async function GET(
   req: NextRequest,
