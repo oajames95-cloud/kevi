@@ -73,10 +73,10 @@ export default function RepProfilePage() {
   const patterns = sections.activityPatterns
   const vsTeam = sections.vsTeam
   const coachingFlags = sections.coachingFlags
-  const categoryBreakdown = sections.categoryBreakdown
-  const topDomains = sections.topDomains
-  const pasteEfficiency = sections.pasteEfficiency
-  const productivityTrend = sections.productivityTrend
+  const categoryBreakdown = sections.categoryBreakdown || []
+  const topDomains = sections.topDomains || []
+  const pasteEfficiency = sections.pasteEfficiency || { pastesPerHour: 0, keystrokesPerPaste: 0, interpretation: 'low', dailyPasteTrend: [] }
+  const productivityTrend = sections.productivityTrend || { scoreTrend: [], summary: { avgScore: 0, bestDay: { date: '', score: 0 }, direction: 'stable', teamAvgScore: 0 } }
 
   const scoreColor =
     atAGlance.todayScore >= 75
