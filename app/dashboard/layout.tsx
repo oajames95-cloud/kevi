@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { DashboardSidebar } from '@/components/dashboard/sidebar'
 import { DashboardHeader } from '@/components/dashboard/header'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
+import { FrostOverlay } from '@/components/dashboard/frost-overlay'
 
 export default async function DashboardLayout({
   children,
@@ -26,6 +27,7 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider>
       <DashboardSidebar user={user} rep={rep} />
+      <FrostOverlay />
       <SidebarInset>
         <DashboardHeader user={user} />
         <div className="flex-1 overflow-auto relative">

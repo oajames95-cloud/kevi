@@ -42,7 +42,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
   })
 
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-background px-4">
+    <header className="sticky top-0 z-20 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-md px-4">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="h-6" />
       <Breadcrumb>
