@@ -33,23 +33,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  BarChart3,
-  ChevronRight,
-  Activity,
-  TrendingUp,
-  Target,
   Users,
   User as UserIcon,
   Settings,
   LogOut,
   ChevronsUpDown,
   Radio,
-  Award,
-  GitCompare,
-  Zap,
-  AlertCircle,
-  LayoutDashboard,
 } from 'lucide-react'
+import useSWR from 'swr'
 import { Rep, Company } from '@/lib/types'
 import { KeviLogo } from '@/components/kevi-logo'
 
@@ -58,30 +49,13 @@ interface DashboardSidebarProps {
   rep: (Rep & { companies: Company }) | null
 }
 
-const navSections = [
-  {
-    title: 'Dashboard',
-    items: [
-      { title: 'Command Centre', href: '/dashboard/command-centre', icon: LayoutDashboard },
-      { title: 'Live View', href: '/dashboard/live-view', icon: Radio },
-    ],
-  },
-  {
-    title: 'Analytics',
-    items: [
-      { title: 'Productivity', href: '/dashboard/productivity/team', icon: Activity },
-      { title: 'Performance', href: '/dashboard/performance/team', icon: TrendingUp },
-      { title: 'Conversion', href: '/dashboard/conversion/team', icon: Target },
-      { title: 'Scorecards', href: '/dashboard/scorecards', icon: Award },
-      { title: 'Focus', href: '/dashboard/focus', icon: Zap },
-      { title: 'Comparison', href: '/dashboard/comparison', icon: GitCompare },
-      { title: 'Coaching', href: '/dashboard/coaching', icon: AlertCircle },
-    ],
-  },
-]
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export function DashboardSidebar({ user, rep }: DashboardSidebarProps) {
   const pathname = usePathname()
+  const { data } = useSWR('/api/reps', fetcher)
+  const teamReps: Rep[] = data?.reps || []
+  
   const companyName = rep?.companies?.name || 'My Company'
   const userName = rep?.name || user.user_metadata?.name || user.email?.split('@')[0] || 'User'
   const initials = userName
@@ -105,46 +79,52 @@ export function DashboardSidebar({ user, rep }: DashboardSidebarProps) {
       </SidebarHeader>
 
       <SidebarContent>
-        {navSections.map(section => (
-          <SidebarGroup key={section.title}>
-            <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {section.items.map(item => (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === item.href}
-                      tooltip={item.title}
-                    >
-                      <Link href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-
+        {/* Live View */}
         <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === '/dashboard/team'}
-                  tooltip="Team"
+                  isActive={pathname === '/dashboard/live-view'}
+                  tooltip="Live View"
                 >
-                  <Link href="/dashboard/team">
-                    <Users className="h-4 w-4" />
-                    <span>Team</span>
+                  <Link href="/dashboard/live-view">
+                    <Radio className="h-4 w-4" />
+                    <span>Live View</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Team - with rep names nested */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Team</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {teamReps.map(r => (
+                <SidebarMenuItem key={r.id}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === `/dashboard/rep/${r.id}`}
+                    tooltip={r.name}
+                  >
+                    <Link href={`/dashboard/rep/${r.id}`}>
+                      <span className="text-sm">{r.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Settings */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
