@@ -13,12 +13,23 @@ export async function GET(req: NextRequest) {
     } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // Get all reps for this company
+    // Get current user's company_id
+    const { data: currentRep } = await supabase
+      .from('reps')
+      .select('company_id')
+      .eq('email', user.email)
+      .single()
+
+    if (!currentRep?.company_id) {
+      return NextResponse.json({ error: 'Company not found' }, { status: 404 })
+    }
+
+    // Get all reps (any role) for this company
     const { data: reps } = await supabase
       .from('reps')
       .select('*')
-      .not('companies', 'is', null)
-      .order('created_at')
+      .eq('company_id', currentRep.company_id)
+      .order('name')
 
     if (!reps || reps.length === 0) {
       return NextResponse.json({ reps: [], teamTotals: {} })
