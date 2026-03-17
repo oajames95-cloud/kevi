@@ -13,14 +13,23 @@ export async function GET(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // Get company
+    // Get company with goals
     const { data: company } = await supabase
       .from('companies')
-      .select('*')
+      .select('id, goals')
       .eq('user_id', user.id)
       .single()
 
     if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
+
+    // Default goals if not set
+    const goals = company.goals || {
+      activeHoursPerDay: 6,
+      prospectingPct: 35,
+      minFocusBlockMins: 30,
+      keystrokeIntensityPerHour: 600,
+      workingDaysPerMonth: 22,
+    }
 
     // Get all reps with full metrics
     const { data: reps } = await supabase
@@ -29,7 +38,7 @@ export async function GET(req: NextRequest) {
       .eq('company_id', company.id)
       .order('name')
 
-    if (!reps?.length) return NextResponse.json({ benchmarks: [] })
+    if (!reps?.length) return NextResponse.json({ benchmarks: [], goals, period })
 
     // Calculate metrics for each rep
     const benchmarks = await Promise.all(
@@ -62,7 +71,7 @@ export async function GET(req: NextRequest) {
     const sortedByKeystrokes = benchmarks.sort((a, b) => b.avgKeystrokesPerEvent - a.avgKeystrokesPerEvent)
     const sortedByFocus = benchmarks.sort((a, b) => b.avgFocusSecsPerEvent - a.avgFocusSecsPerEvent)
 
-    return NextResponse.json({ benchmarks: benchmarks.sort((a, b) => b.avgKeystrokesPerEvent - a.avgKeystrokesPerEvent), period })
+    return NextResponse.json({ benchmarks: benchmarks.sort((a, b) => b.avgKeystrokesPerEvent - a.avgKeystrokesPerEvent), goals, period })
   } catch (error) {
     console.error('Benchmarking error:', error)
     return NextResponse.json({ error: 'Failed to fetch benchmarking data' }, { status: 500 })

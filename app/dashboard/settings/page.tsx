@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -8,38 +8,94 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { Check } from 'lucide-react'
+import type { Rep } from '@/lib/types'
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
+
+interface SalarySaveState {
+  [repId: string]: boolean
+}
 
 export default function SettingsPage() {
   const router = useRouter()
   const { data: user, isLoading } = useSWR('/api/auth/user', fetcher)
   const { data: company } = useSWR('/api/company', fetcher)
+  const { data: reps } = useSWR('/api/reps', fetcher)
+  const { data: goals } = useSWR('/api/company/goals', fetcher)
+  
+  const [salaries, setSalaries] = useState<{ [repId: string]: number }>({})
+  const [salarySaved, setSalarySaved] = useState<SalarySaveState>({})
   
   const [activeHours, setActiveHours] = useState('6')
   const [prospectingPct, setProspectingPct] = useState('35')
   const [minFocus, setMinFocus] = useState('30')
+  const [keystrokeIntensity, setKeystrokeIntensity] = useState('600')
   const [workingDays, setWorkingDays] = useState('22')
   const [saving, setSaving] = useState(false)
+
+  // Initialize salaries when reps load
+  const handleSalaryChange = (repId: string, value: string) => {
+    setSalaries(prev => ({
+      ...prev,
+      [repId]: parseInt(value) || 0,
+    }))
+    // Clear saved confirmation when user edits
+    setSalarySaved(prev => ({
+      ...prev,
+      [repId]: false,
+    }))
+  }
+
+  const handleSalarySave = useCallback(async (repId: string) => {
+    try {
+      const response = await fetch(`/api/reps/${repId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          annual_salary_gbp: salaries[repId] || 0,
+        }),
+      })
+      
+      if (response.ok) {
+        setSalarySaved(prev => ({
+          ...prev,
+          [repId]: true,
+        }))
+        // Remove checkmark after 2 seconds
+        setTimeout(() => {
+          setSalarySaved(prev => ({
+            ...prev,
+            [repId]: false,
+          }))
+        }, 2000)
+        mutate('/api/reps')
+      } else {
+        toast.error('Failed to save salary')
+      }
+    } catch (error) {
+      toast.error('Error saving salary')
+    }
+  }, [salaries])
 
   const handleSaveGoals = async () => {
     setSaving(true)
     try {
       const response = await fetch('/api/company/goals', {
-        method: 'POST',
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           activeHoursPerDay: parseInt(activeHours),
           prospectingPct: parseInt(prospectingPct),
           minFocusBlockMins: parseInt(minFocus),
-          keystrokeIntensityPerHour: 600,
+          keystrokeIntensityPerHour: parseInt(keystrokeIntensity),
           workingDaysPerMonth: parseInt(workingDays),
         }),
       })
       
       if (response.ok) {
         toast.success('Goals saved successfully')
-        mutate('/api/company')
+        mutate('/api/company/goals')
       } else {
         toast.error('Failed to save goals')
       }
@@ -64,27 +120,52 @@ export default function SettingsPage() {
         {/* Header */}
         <h1 className="text-3xl font-bold text-white mb-8">Settings</h1>
 
-        {/* Rep Salaries */}
-        <Card className="bg-white/[0.04] border-white/10 mb-8">
-          <CardHeader>
-            <CardTitle>Team Salaries</CardTitle>
-            <CardDescription>Set annual salaries for accurate ROI calculations</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-white/60 text-sm mb-4">
-              To set individual rep salaries, visit the Team page and edit each rep's profile.
-            </p>
-            <Button asChild>
-              <a href="/dashboard/team">Go to Team Settings</a>
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Team Member Salaries */}
+        {reps && reps.length > 0 && (
+          <Card className="bg-white/[0.04] border-white/10 mb-8">
+            <CardHeader>
+              <CardTitle>Team Salaries</CardTitle>
+              <CardDescription>Set annual salaries for ROI calculations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {reps.map((rep: Rep) => (
+                  <div key={rep.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-white">{rep.name}</p>
+                      <p className="text-xs text-white/60">{rep.email}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-white/60">£</span>
+                      <Input
+                        type="number"
+                        value={salaries[rep.id] ?? rep.annual_salary_gbp ?? 0}
+                        onChange={(e) => handleSalaryChange(rep.id, e.target.value)}
+                        onBlur={() => handleSalarySave(rep.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleSalarySave(rep.id)
+                          }
+                        }}
+                        className="bg-white/5 border-white/10 text-white w-32"
+                        placeholder="0"
+                      />
+                      {salarySaved[rep.id] && (
+                        <Check className="h-4 w-4 text-emerald-400" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Team Goals */}
         <Card className="bg-white/[0.04] border-white/10">
           <CardHeader>
-            <CardTitle>Team Goals</CardTitle>
-            <CardDescription>Set performance targets for your team</CardDescription>
+            <CardTitle>Performance Goals</CardTitle>
+            <CardDescription>Set targets for your team</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div>
@@ -138,6 +219,24 @@ export default function SettingsPage() {
                   max="120"
                 />
                 <span className="text-white/60">minutes</span>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="keystrokeIntensity" className="text-white/80">
+                Keystroke intensity target
+              </Label>
+              <div className="flex items-center gap-2 mt-2">
+                <Input
+                  id="keystrokeIntensity"
+                  type="number"
+                  value={keystrokeIntensity}
+                  onChange={(e) => setKeystrokeIntensity(e.target.value)}
+                  className="bg-white/5 border-white/10 text-white"
+                  min="300"
+                  max="1000"
+                />
+                <span className="text-white/60">keystrokes/hour</span>
               </div>
             </div>
 
