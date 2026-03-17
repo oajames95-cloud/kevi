@@ -48,6 +48,7 @@ import {
   GitCompare,
   Zap,
   AlertCircle,
+  LayoutDashboard,
 } from 'lucide-react'
 import { Rep, Company } from '@/lib/types'
 import { KeviLogo } from '@/components/kevi-logo'
@@ -58,6 +59,13 @@ interface DashboardSidebarProps {
 }
 
 const navSections = [
+  {
+    title: 'Dashboard',
+    items: [
+      { title: 'Command Centre', href: '/dashboard/command-centre', icon: LayoutDashboard },
+      { title: 'Live View', href: '/dashboard/live-view', icon: Radio },
+    ],
+  },
   {
     title: 'Analytics',
     items: [
@@ -97,47 +105,29 @@ export function DashboardSidebar({ user, rep }: DashboardSidebarProps) {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Analytics</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navSections[0].items.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname === item.href}
-                    tooltip={item.title}
-                  >
-                    <Link href={item.href}>
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Live</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  asChild
-                  isActive={pathname === '/dashboard/live-view'}
-                  tooltip="Live View"
-                >
-                  <Link href="/dashboard/live-view">
-                    <Radio className="h-4 w-4" />
-                    <span>Live View</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {navSections.map(section => (
+          <SidebarGroup key={section.title}>
+            <SidebarGroupLabel>{section.title}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map(item => (
+                  <SidebarMenuItem key={item.href}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === item.href}
+                      tooltip={item.title}
+                    >
+                      <Link href={item.href}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
 
         <SidebarGroup>
           <SidebarGroupLabel>Management</SidebarGroupLabel>
