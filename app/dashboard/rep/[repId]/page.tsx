@@ -114,76 +114,65 @@ export default function RepProfilePage() {
         {/* SECTION 1: Today at a glance */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-white mb-4">Today at a glance</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Daily score */}
             <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10">
-              <CardHeader>
-                <CardDescription>Daily Score</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className={`text-4xl font-bold ${scoreColor} rounded p-4 text-center`}>
-                  {atAGlance.todayScore}
-                </div>
+              <CardContent className="pt-6">
+                <p className="text-xs font-medium text-white/60 mb-2">Daily Score</p>
+                <p className={`text-3xl font-bold mb-1 ${scoreColor.split(' ')[0]}`}>{atAGlance.todayScore}</p>
+                <p className="text-sm text-white/60">Target: 75</p>
               </CardContent>
             </Card>
 
             {/* Active time */}
             <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10">
-              <CardHeader>
-                <CardDescription>Active Today</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold text-emerald-400">{fmtTime(atAGlance.activeTime)}</p>
-                <p className="text-xs text-white/60 mt-2">Target: 6h</p>
+              <CardContent className="pt-6">
+                <p className="text-xs font-medium text-white/60 mb-2">Active Today</p>
+                <p className="text-3xl font-bold text-emerald-400 mb-1">{fmtTime(atAGlance.activeTime)}</p>
+                <p className="text-sm text-white/60">Target: 6h</p>
               </CardContent>
             </Card>
 
             {/* Status */}
             <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10">
-              <CardHeader>
-                <CardDescription>Status</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Badge
-                  className={
-                    atAGlance.status === 'online'
-                      ? 'bg-emerald-500/20 text-emerald-400'
-                      : atAGlance.status === 'passive'
-                        ? 'bg-yellow-500/20 text-yellow-400'
-                        : 'bg-gray-500/20 text-gray-400'
-                  }
-                >
+              <CardContent className="pt-6">
+                <p className="text-xs font-medium text-white/60 mb-2">Status</p>
+                <p className={`text-3xl font-bold mb-1 ${
+                  atAGlance.status === 'online'
+                    ? 'text-emerald-400'
+                    : atAGlance.status === 'passive'
+                      ? 'text-orange-400'
+                      : 'text-red-400'
+                }`}>
                   {atAGlance.status}
-                </Badge>
+                </p>
                 {atAGlance.currentDomain && (
-                  <p className="text-xs text-white/60 mt-2">{atAGlance.currentDomain}</p>
+                  <p className="text-sm text-white/60">{atAGlance.currentDomain}</p>
                 )}
               </CardContent>
             </Card>
 
             {/* Coaching flags */}
             <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10">
-              <CardHeader>
-                <CardDescription>Coaching Flags</CardDescription>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
+                <p className="text-xs font-medium text-white/60 mb-2">Coaching Flags</p>
                 {coachingFlags.hasFlags ? (
-                  <div className="flex items-center gap-2">
-                    <AlertCircle className="h-5 w-5 text-red-400" />
-                    <span className="font-semibold text-red-400">{coachingFlags.flags.length}</span>
-                  </div>
+                  <>
+                    <p className="text-3xl font-bold text-red-400 mb-1">{coachingFlags.flags.length}</p>
+                    <p className="text-sm text-white/60">Issues found</p>
+                  </>
                 ) : (
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-emerald-400" />
-                    <span className="font-semibold text-emerald-400">Clean</span>
-                  </div>
+                  <>
+                    <p className="text-3xl font-bold text-emerald-400 mb-1">0</p>
+                    <p className="text-sm text-white/60">No issues</p>
+                  </>
                 )}
               </CardContent>
             </Card>
           </div>
 
           {/* Activity bar */}
-          <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10">
+          <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10 mt-4">
             <CardContent className="pt-6">
               <div className="space-y-3">
                 <div className="h-3 bg-white/10 rounded-full overflow-hidden flex">

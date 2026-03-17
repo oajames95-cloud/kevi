@@ -39,6 +39,8 @@ import {
   LogOut,
   ChevronsUpDown,
   Radio,
+  DollarSign,
+  BarChart3,
 } from 'lucide-react'
 import useSWR from 'swr'
 import { Rep, Company } from '@/lib/types'
@@ -117,6 +119,39 @@ export function DashboardSidebar({ user, rep }: DashboardSidebarProps) {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Business Impact Views */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Business Impact</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/dashboard/roi'}
+                  tooltip="ROI Dashboard"
+                >
+                  <Link href="/dashboard/roi">
+                    <DollarSign className="h-4 w-4" />
+                    <span>ROI Dashboard</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/dashboard/benchmarking'}
+                  tooltip="Benchmarking"
+                >
+                  <Link href="/dashboard/benchmarking">
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Benchmarking</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
