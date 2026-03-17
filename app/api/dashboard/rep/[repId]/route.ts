@@ -4,11 +4,11 @@ import { calcDailyScore, calcFocusBlocks, detectFlags } from '@/lib/kevi-utils'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { repId: string } }
+  { params }: { params: Promise<{ repId: string }> }
 ) {
   try {
     const supabase = await createClient()
-    const repId = params.repId
+    const { repId } = await params
     const period = req.nextUrl.searchParams.get('period') || '7d'
 
     // Get authenticated user
