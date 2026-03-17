@@ -31,6 +31,9 @@ import {
   ComposedChart,
   ScatterChart,
   Scatter,
+  PieChart,
+  Pie,
+  Cell,
 } from 'recharts'
 import { fmtTime, DOMAIN_CATEGORIES } from '@/lib/kevi-utils'
 import { ArrowLeft, AlertCircle, CheckCircle, TrendingUp, TrendingDown } from 'lucide-react'
@@ -70,6 +73,10 @@ export default function RepProfilePage() {
   const patterns = sections.activityPatterns
   const vsTeam = sections.vsTeam
   const coachingFlags = sections.coachingFlags
+  const categoryBreakdown = sections.categoryBreakdown
+  const topDomains = sections.topDomains
+  const pasteEfficiency = sections.pasteEfficiency
+  const productivityTrend = sections.productivityTrend
 
   const scoreColor =
     atAGlance.todayScore >= 75
@@ -384,6 +391,196 @@ export default function RepProfilePage() {
             </CardContent>
           </Card>
         )}
+
+        {/* PANEL A: Category breakdown pie chart */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-white mb-4">Activity breakdown</h2>
+          <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10">
+            <CardContent className="pt-6">
+              <div className="flex flex-col lg:flex-row items-center gap-8">
+                <div className="flex-1 flex justify-center">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={categoryBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={80}
+                        outerRadius={120}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {categoryBreakdown.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{ backgroundColor: 'rgba(10,10,10,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}
+                        formatter={(value) => fmtTime(value)}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex-1 space-y-2">
+                  {categoryBreakdown.map(cat => (
+                    <div key={cat.name} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                      <div className="flex items-center gap-2">
+                        <div className="w-3 h-3 rounded" style={{ backgroundColor: cat.color }} />
+                        <span className="text-white/80">{cat.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-white/60">{fmtTime(cat.value)}</span>
+                        <span className="text-xs font-semibold text-emerald-400">{cat.percentage}%</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="text-center pt-2 border-t border-white/10">
+                    <p className="text-sm text-white/60">Total active time</p>
+                    <p className="text-2xl font-bold text-emerald-400">{fmtTime(Object.values(atAGlance.byCategory).reduce((a, b) => a + b, 0))}</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* PANEL B: Most visited sites */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-white mb-4">Most visited sites</h2>
+          <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10">
+            <CardContent className="pt-6">
+              <div className="space-y-3">
+                {topDomains.map((domain, idx) => (
+                  <div key={idx} className="flex items-center gap-3 p-3 bg-white/5 rounded hover:bg-white/10 transition-colors">
+                    <div className="w-8 h-8 rounded bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                      {domain.domain.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-white">{domain.domain}</p>
+                      {domain.pageTitle && <p className="text-xs text-white/60 truncate">{domain.pageTitle}</p>}
+                    </div>
+                    <Badge variant="outline" className="text-xs flex-shrink-0">{domain.category}</Badge>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                          style={{ width: `${domain.percentage}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-white/80 w-8 text-right">{fmtTime(domain.totalSeconds)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* PANEL C: Paste/copy efficiency */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-white mb-4">Workflow efficiency</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10">
+              <CardContent className="pt-6">
+                <div className="space-y-6">
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-bold text-emerald-400">{pasteEfficiency.pastesPerHour}</p>
+                    <p className="text-white/60">pastes per hour</p>
+                  </div>
+                  <p className="text-sm text-white/70">Using templates & sequences</p>
+                  
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-4xl font-bold text-white">{pasteEfficiency.keystrokesPerPaste}</p>
+                    <p className="text-white/60">keystrokes per paste</p>
+                  </div>
+                  <p className="text-sm text-white/70">Keys between each paste</p>
+
+                  <div className={`p-3 rounded text-sm ${
+                    pasteEfficiency.interpretation === 'high'
+                      ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
+                      : pasteEfficiency.interpretation === 'medium'
+                        ? 'bg-orange-500/10 text-orange-300 border border-orange-500/30'
+                        : 'bg-red-500/10 text-red-300 border border-red-500/30'
+                  }`}>
+                    {pasteEfficiency.interpretation === 'high' && 'Strong automation habits — sequences and templates in regular use'}
+                    {pasteEfficiency.interpretation === 'medium' && 'Moderate automation — opportunity to build more sequences'}
+                    {pasteEfficiency.interpretation === 'low' && 'Mostly manual outreach — coach on sequence building and template use'}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10">
+              <CardHeader>
+                <CardTitle className="text-base">Paste trend</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {pasteEfficiency.dailyPasteTrend.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={pasteEfficiency.dailyPasteTrend}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                      <XAxis dataKey="date" stroke="rgba(255,255,255,0.6)" tick={{ fontSize: 12 }} />
+                      <YAxis stroke="rgba(255,255,255,0.6)" tick={{ fontSize: 12 }} />
+                      <Tooltip
+                        contentStyle={{ backgroundColor: 'rgba(10,10,10,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}
+                      />
+                      <Bar dataKey="pasteCount" fill="#10B981" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-center text-white/60 py-12">No paste data for this period</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* PANEL D: Productivity trend */}
+        <div className="mb-12">
+          <h2 className="text-2xl font-bold text-white mb-4">Productivity trend</h2>
+          <Card className="bg-white/[0.04] backdrop-blur-sm border border-white/10">
+            <CardContent className="pt-6">
+              <ResponsiveContainer width="100%" height={300}>
+                <ComposedChart data={productivityTrend.scoreTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="date" stroke="rgba(255,255,255,0.6)" tick={{ fontSize: 12 }} />
+                  <YAxis yAxisId="left" stroke="rgba(255,255,255,0.6)" tick={{ fontSize: 12 }} domain={[0, 100]} />
+                  <YAxis yAxisId="right" orientation="right" stroke="rgba(255,255,255,0.6)" tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: 'rgba(10,10,10,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}
+                  />
+                  <ReferenceLine yAxisId="left" y={productivityTrend.summary.teamAvgScore} stroke="rgba(255,255,255,0.3)" strokeDasharray="5 5" label="Team avg" />
+                  <Bar yAxisId="left" dataKey="activeTime" fill="rgba(16,185,129,0.2)" radius={[4, 4, 0, 0]} />
+                  <Line yAxisId="left" type="monotone" dataKey="score" stroke="#10B981" dot={{ fill: '#10B981', r: 4 }} isAnimationActive={false} />
+                </ComposedChart>
+              </ResponsiveContainer>
+
+              <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-white/10">
+                <div className="text-center">
+                  <p className="text-white/60 text-sm mb-1">Average score</p>
+                  <p className="text-2xl font-bold text-emerald-400">{productivityTrend.summary.avgScore}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-white/60 text-sm mb-1">Best day</p>
+                  <p className="text-2xl font-bold text-emerald-400">{productivityTrend.summary.bestDay.score}</p>
+                  <p className="text-xs text-white/60">{productivityTrend.summary.bestDay.date}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-white/60 text-sm mb-1">Trend</p>
+                  <p className={`text-2xl font-bold flex items-center justify-center gap-1 ${
+                    productivityTrend.summary.direction === 'improving' ? 'text-emerald-400' :
+                    productivityTrend.summary.direction === 'declining' ? 'text-red-400' :
+                    'text-white/80'
+                  }`}>
+                    {productivityTrend.summary.direction === 'improving' && '↑ Improving'}
+                    {productivityTrend.summary.direction === 'declining' && '↓ Declining'}
+                    {productivityTrend.summary.direction === 'stable' && '→ Stable'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

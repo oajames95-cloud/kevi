@@ -269,6 +269,124 @@ export async function GET(
       hasFlags: flags.length > 0,
     }
 
+    // ===== NEW SECTIONS =====
+
+    // SECTION 6: Category breakdown (pie chart data)
+    const categoryColors: Record<string, string> = {
+      prospecting: '#10b981', // emerald
+      outreach: '#8b5cf6',    // violet
+      crm: '#3b82f6',         // blue
+      meetings: '#ec4899',    // pink
+      comms: '#f97316',       // orange
+      downtime: '#6b7280',    // gray
+    }
+    
+    const pieChartData = Object.entries(todayByCategory).map(([category, seconds]) => ({
+      name: category.charAt(0).toUpperCase() + category.slice(1),
+      value: seconds,
+      percentage: totalActiveSecs > 0 ? Math.round((seconds / totalActiveSecs) * 100) : 0,
+      color: categoryColors[category] || '#9ca3af',
+    }))
+
+    // SECTION 7: Top domains (most visited sites)
+    const domainMap: Record<string, { domain: string; pageTitle: string | null; category: string; totalSeconds: number }> = {}
+    todayEventsList.forEach(e => {
+      if (!domainMap[e.domain]) {
+        domainMap[e.domain] = {
+          domain: e.domain,
+          pageTitle: e.page_title || null,
+          category: e.category,
+          totalSeconds: 0,
+        }
+      }
+      domainMap[e.domain].totalSeconds += e.focus_seconds || 0
+    })
+
+    const topDomains = Object.values(domainMap)
+      .sort((a, b) => b.totalSeconds - a.totalSeconds)
+      .slice(0, 10)
+      .map(d => ({
+        ...d,
+        percentage: totalActiveSecs > 0 ? Math.round((d.totalSeconds / totalActiveSecs) * 100) : 0,
+      }))
+
+    // SECTION 8: Paste/copy efficiency
+    const totalPastes = todayEventsList.reduce((acc, e) => acc + (e.paste_count || 0), 0)
+    const activeHours = totalActiveSecs / 3600
+    const pastesPerHour = activeHours > 0 ? Math.round((totalPastes / activeHours) * 10) / 10 : 0
+    const keystrokesPerPaste = totalPastes > 0 ? Math.round(totalKeystrokes / totalPastes) : 0
+    
+    let pasteInterpretation: 'high' | 'medium' | 'low' = 'low'
+    if (pastesPerHour > 5) pasteInterpretation = 'high'
+    else if (pastesPerHour >= 2) pasteInterpretation = 'medium'
+
+    // Daily paste trend for the period
+    const dailyPasteTrend: Record<string, number> = {}
+    periodEventsList?.forEach(e => {
+      const date = new Date(e.recorded_at).toISOString().split('T')[0]
+      dailyPasteTrend[date] = (dailyPasteTrend[date] || 0) + (e.paste_count || 0)
+    })
+
+    const pasteEfficiency = {
+      pastesPerHour,
+      keystrokesPerPaste,
+      interpretation: pasteInterpretation,
+      dailyPasteTrend: Object.entries(dailyPasteTrend)
+        .map(([date, count]) => ({ date, pasteCount: count }))
+        .sort((a, b) => a.date.localeCompare(b.date)),
+    }
+
+    // SECTION 9: Productivity trend with summary
+    const bestDay = dailyScores.reduce((max, curr) => 
+      curr.score > max.score ? curr : max,
+      dailyScores[0] || { date: '', score: 0 }
+    )
+    
+    const avgScore = dailyScores.length > 0 
+      ? Math.round(dailyScores.reduce((acc, d) => acc + d.score, 0) / dailyScores.length)
+      : 0
+
+    const firstHalfAvg = dailyScores.length > 0
+      ? dailyScores.slice(0, Math.ceil(dailyScores.length / 2)).reduce((acc, d) => acc + d.score, 0) / Math.ceil(dailyScores.length / 2)
+      : 0
+    
+    const secondHalfAvg = dailyScores.length > 1
+      ? dailyScores.slice(Math.ceil(dailyScores.length / 2)).reduce((acc, d) => acc + d.score, 0) / Math.floor(dailyScores.length / 2)
+      : 0
+
+    let direction: 'improving' | 'declining' | 'stable' = 'stable'
+    if (secondHalfAvg > firstHalfAvg * 1.05) direction = 'improving'
+    else if (secondHalfAvg < firstHalfAvg * 0.95) direction = 'declining'
+
+    // Get team average score for the period
+    const { data: allTeamEvents } = await supabase
+      .from('activity_events')
+      .select('rep_id, focus_seconds, keystrokes, category')
+      .in('rep_id', repIds)
+      .gte('recorded_at', periodStart.toISOString())
+
+    const teamScoreByDay: Record<string, { totalScore: number; count: number }> = {}
+    allTeamEvents?.forEach(e => {
+      const date = new Date(e.recorded_at).toISOString().split('T')[0]
+      if (!teamScoreByDay[date]) teamScoreByDay[date] = { totalScore: 0, count: 0 }
+      teamScoreByDay[date].totalScore += e.focus_seconds || 0
+      teamScoreByDay[date].count += 1
+    })
+
+    const teamAvgScore = Object.values(teamScoreByDay).length > 0
+      ? Math.round(Object.values(teamScoreByDay).reduce((acc, d) => acc + (d.totalScore / Math.max(d.count, 1)), 0) / Object.values(teamScoreByDay).length / 600) // rough estimate
+      : 0
+
+    const productivityTrend = {
+      scoreTrend: dailyScores,
+      summary: {
+        avgScore,
+        bestDay,
+        direction,
+        teamAvgScore,
+      },
+    }
+
     return NextResponse.json({
       rep: {
         id: rep.id,
@@ -281,6 +399,10 @@ export async function GET(
         activityPatterns: section3,
         vsTeam: section4,
         coachingFlags: section5,
+        categoryBreakdown: pieChartData,
+        topDomains,
+        pasteEfficiency,
+        productivityTrend,
       },
     })
   } catch (error) {
