@@ -50,12 +50,13 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4 relative overflow-hidden">
-      {/* Gradient fog background */}
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      {/* Gradient fog background - layered glows */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-600/25 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[-10%] left-[20%] w-[400px] h-[300px] bg-green-700/15 rounded-full blur-[80px]" />
-        <div className="absolute top-[30%] right-[-5%] w-[300px] h-[300px] bg-teal-600/15 rounded-full blur-[80px]" />
+        <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-emerald-500/30 rounded-full blur-[130px]" />
+        <div className="absolute bottom-[-10%] left-[15%] w-[500px] h-[400px] bg-green-600/20 rounded-full blur-[100px]" />
+        <div className="absolute top-[25%] right-[-5%] w-[400px] h-[400px] bg-teal-500/20 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[30%] right-[20%] w-[300px] h-[300px] bg-emerald-600/15 rounded-full blur-[80px]" />
       </div>
       <div className="w-full max-w-md relative z-10">
         <div className="flex items-center justify-center mb-8">
@@ -64,7 +65,7 @@ export default function SignUpPage() {
           </Link>
         </div>
 
-        <div className="p-8 rounded-2xl bg-white/5 border border-white/10">
+        <div className="p-8 rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/10 shadow-xl shadow-emerald-900/10">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-semibold text-white mb-2">Create an account</h1>
             <p className="text-white/60">Start tracking your sales team performance</p>

@@ -33,18 +33,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
-  BarChart3,
-  ChevronRight,
-  Activity,
-  TrendingUp,
-  Target,
   Users,
   User as UserIcon,
   Settings,
   LogOut,
   ChevronsUpDown,
   Radio,
+  DollarSign,
+  BarChart3,
 } from 'lucide-react'
+import useSWR from 'swr'
 import { Rep, Company } from '@/lib/types'
 import { KeviLogo } from '@/components/kevi-logo'
 
@@ -53,38 +51,13 @@ interface DashboardSidebarProps {
   rep: (Rep & { companies: Company }) | null
 }
 
-const navSections = [
-  {
-    title: 'Productivity',
-    icon: Activity,
-    basePath: '/dashboard/productivity',
-    items: [
-      { title: 'Team Overview', href: '/dashboard/productivity/team' },
-      { title: 'Individual', href: '/dashboard/productivity/individual' },
-    ],
-  },
-  {
-    title: 'Performance',
-    icon: TrendingUp,
-    basePath: '/dashboard/performance',
-    items: [
-      { title: 'Team Overview', href: '/dashboard/performance/team' },
-      { title: 'Individual', href: '/dashboard/performance/individual' },
-    ],
-  },
-  {
-    title: 'Conversion',
-    icon: Target,
-    basePath: '/dashboard/conversion',
-    items: [
-      { title: 'Team Overview', href: '/dashboard/conversion/team' },
-      { title: 'Individual', href: '/dashboard/conversion/individual' },
-    ],
-  },
-]
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 export function DashboardSidebar({ user, rep }: DashboardSidebarProps) {
   const pathname = usePathname()
+  const { data } = useSWR('/api/reps', fetcher)
+  const teamReps: Rep[] = data?.reps || []
+  
   const companyName = rep?.companies?.name || 'My Company'
   const userName = rep?.name || user.user_metadata?.name || user.email?.split('@')[0] || 'User'
   const initials = userName
@@ -108,46 +81,8 @@ export function DashboardSidebar({ user, rep }: DashboardSidebarProps) {
       </SidebarHeader>
 
       <SidebarContent>
+        {/* Live View */}
         <SidebarGroup>
-          <SidebarGroupLabel>Analytics</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navSections.map((section) => {
-                const isOpen = pathname.startsWith(section.basePath)
-                return (
-                  <Collapsible key={section.title} defaultOpen={isOpen} className="group/collapsible">
-                    <SidebarMenuItem>
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton tooltip={section.title}>
-                          <section.icon className="h-4 w-4" />
-                          <span>{section.title}</span>
-                          <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {section.items.map((item) => (
-                            <SidebarMenuSubItem key={item.href}>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={pathname === item.href}
-                              >
-                                <Link href={item.href}>{item.title}</Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </SidebarMenuItem>
-                  </Collapsible>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>Live</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -166,22 +101,65 @@ export function DashboardSidebar({ user, rep }: DashboardSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
+        {/* Team - with rep names nested */}
         <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
+          <SidebarGroupLabel>Team</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {teamReps.map(r => (
+                <SidebarMenuItem key={r.id}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === `/dashboard/rep/${r.id}`}
+                    tooltip={r.name}
+                  >
+                    <Link href={`/dashboard/rep/${r.id}`}>
+                      <span className="text-sm">{r.name}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Business Impact Views */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Business Impact</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
-                  isActive={pathname === '/dashboard/team'}
-                  tooltip="Team"
+                  isActive={pathname === '/dashboard/roi'}
+                  tooltip="ROI Dashboard"
                 >
-                  <Link href="/dashboard/team">
-                    <Users className="h-4 w-4" />
-                    <span>Team</span>
+                  <Link href="/dashboard/roi">
+                    <DollarSign className="h-4 w-4" />
+                    <span>ROI Dashboard</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === '/dashboard/benchmarking'}
+                  tooltip="Benchmarking"
+                >
+                  <Link href="/dashboard/benchmarking">
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Benchmarking</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Settings */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild

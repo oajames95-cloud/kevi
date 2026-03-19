@@ -4,17 +4,34 @@ import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Activity, AlertTriangle, Clock, Users, Zap, Monitor, RefreshCw } from 'lucide-react'
+import { Activity, AlertTriangle, Clock, Users, Zap, Monitor, RefreshCw, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as ChartTooltip,
+  ResponsiveContainer,
+} from 'recharts'
 import type { RepWithStatus, LiveViewData } from '@/lib/types'
 import { formatDuration } from '@/lib/kevi-utils'
 
-const REFRESH_INTERVAL = 10000 // 10 seconds
+const REFRESH_INTERVAL = 15000 // 15 seconds auto-refresh
 
 export default function LiveViewPage() {
   const [data, setData] = useState<LiveViewData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Prevent hydration mismatch by only rendering dates after mount
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const fetchData = useCallback(async () => {
     try {
@@ -79,7 +96,7 @@ export default function LiveViewPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">
-              Last updated: {lastRefresh.toLocaleTimeString()}
+              Last updated: {mounted && lastRefresh ? lastRefresh.toLocaleTimeString() : '--:--:--'}
             </span>
             <Button variant="outline" size="sm" onClick={fetchData}>
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -235,10 +252,10 @@ export default function LiveViewPage() {
                     )}
                     
                     {(!rep.status || rep.status.status === 'offline') && (
-                      <div className="text-sm text-muted-foreground">
-                        {rep.last_seen_at 
+                      <div className="text-sm text-muted-foreground" suppressHydrationWarning>
+                        {mounted && rep.last_seen_at 
                           ? `Last seen ${new Date(rep.last_seen_at).toLocaleString()}`
-                          : 'Never connected'
+                          : rep.last_seen_at ? 'Last seen recently' : 'Never connected'
                         }
                       </div>
                     )}
@@ -256,6 +273,158 @@ export default function LiveViewPage() {
             )}
           </CardContent>
         </Card>
+
+        {/* PANEL 1: Hourly activity today */}
+        {data?.hourlyActivity && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Activity by hour — today</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-1 h-16 items-end">
+                {data.hourlyActivity.map((hour) => (
+                  <Tooltip key={hour.hour}>
+                    <TooltipTrigger className="flex-1">
+                      <div
+                        className={`w-full h-full rounded-t transition-all ${
+                          hour.totalSeconds === 0
+                            ? 'bg-white/5'
+                            : 'bg-gradient-to-t from-emerald-500 to-emerald-400 hover:opacity-80'
+                        }`}
+                        style={{
+                          opacity: Math.min(1, hour.totalSeconds / 7200),
+                          minHeight: '4px',
+                        }}
+                      />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {`${hour.hour}:00 - ${hour.repCount} reps, ${Math.floor(hour.totalSeconds / 60)}m active`}
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+              <div className="text-xs text-white/60 mt-2 text-center">
+                Peak so far: {data.hourlyActivity.reduce((max, h) => h.totalSeconds > max.totalSeconds ? h : max).hour}:00
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* PANEL 2: Today's leaderboard */}
+        {data?.todayLeaderboard && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Today's leaderboard</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {data.todayLeaderboard.map((rep, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded hover:bg-white/10 transition-colors">
+                    <div className="flex items-center gap-3 flex-1">
+                      <span className="text-sm font-bold text-white/60 w-6">{rep.rank}</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-white">{rep.name}</p>
+                        <p className="text-xs text-white/60">{rep.topCategory}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <p className={`text-sm font-bold ${
+                          rep.score >= 75 ? 'text-emerald-400' :
+                          rep.score >= 50 ? 'text-orange-400' :
+                          'text-red-400'
+                        }`}>{rep.score}</p>
+                      </div>
+                      <Badge
+                        className={
+                          rep.status === 'online'
+                            ? 'bg-emerald-500/20 text-emerald-400'
+                            : rep.status === 'passive'
+                              ? 'bg-orange-500/20 text-orange-400'
+                              : 'bg-white/10 text-white/60'
+                        }
+                      >
+                        {rep.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* PANEL 3: Team's most used tools today */}
+        {data?.teamTopDomains && data.teamTopDomains.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Team's most used tools today</CardTitle>
+              <CardDescription>Combined time across {data.summary.online + data.summary.passive} active reps</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {data.teamTopDomains.map((domain, idx) => (
+                  <div key={idx} className="flex items-center gap-3 p-2">
+                    <div className="w-2 h-2 rounded-full flex-shrink-0 bg-emerald-500" />
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-white">{domain.domain}</p>
+                      <p className="text-xs text-white/60">{domain.repCount} reps</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-24 h-2 bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-400"
+                          style={{
+                            width: `${(domain.totalSeconds / Math.max(...data.teamTopDomains.map(d => d.totalSeconds), 1)) * 100}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="text-xs font-semibold text-white/80 w-10 text-right">
+                        {Math.floor(domain.totalSeconds / 60)}m
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* PANEL 4: Team productivity trending */}
+        {data?.teamScoreTrend && data.teamScoreTrend.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Team productivity — last 14 days</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={data.teamScoreTrend}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                  <XAxis dataKey="date" stroke="rgba(255,255,255,0.6)" tick={{ fontSize: 12 }} />
+                  <YAxis stroke="rgba(255,255,255,0.6)" tick={{ fontSize: 12 }} domain={[0, 100]} />
+                  <ChartTooltip
+                    contentStyle={{ backgroundColor: 'rgba(10,10,10,0.8)', border: '1px solid rgba(255,255,255,0.1)' }}
+                    formatter={(value) => [`Team avg: ${value}`, 'Score']}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="avgScore"
+                    stroke="#10B981"
+                    dot={{ fill: '#10B981', r: 3 }}
+                    isAnimationActive={false}
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+              <div className="text-sm text-white/60 mt-4 text-center">
+                {data.teamScoreTrend[data.teamScoreTrend.length - 1]?.avgScore > data.teamScoreTrend[0]?.avgScore
+                  ? '↑ Team average improving'
+                  : '↓ Team average declining'
+                }
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </TooltipProvider>
   )

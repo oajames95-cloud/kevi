@@ -8,19 +8,23 @@ import { KeviLogo } from '@/components/kevi-logo'
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-black overflow-hidden">
+    <div className="min-h-screen bg-background overflow-hidden">
       <MarketingNav />
       <main className="relative">
-        {/* Gradient fog/glow background */}
+        {/* Gradient fog/glow background - multiple layered glows */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          {/* Top center emerald glow */}
-          <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-600/25 rounded-full blur-[120px]" />
-          {/* Left forest green accent */}
-          <div className="absolute top-[20%] left-[-10%] w-[500px] h-[500px] bg-green-700/15 rounded-full blur-[100px]" />
-          {/* Right bottle green accent */}
-          <div className="absolute top-[30%] right-[-10%] w-[400px] h-[400px] bg-teal-600/15 rounded-full blur-[100px]" />
-          {/* Bottom center glow */}
-          <div className="absolute bottom-[10%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-700/20 rounded-full blur-[120px]" />
+          {/* Top center emerald glow - hero area */}
+          <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[900px] h-[700px] bg-emerald-500/30 rounded-full blur-[150px]" />
+          {/* Left forest green accent - softer */}
+          <div className="absolute top-[15%] left-[-5%] w-[600px] h-[600px] bg-green-600/20 rounded-full blur-[130px]" />
+          {/* Right teal accent */}
+          <div className="absolute top-[25%] right-[-5%] w-[500px] h-[500px] bg-teal-500/20 rounded-full blur-[120px]" />
+          {/* Mid-page emerald pulse */}
+          <div className="absolute top-[50%] left-[30%] w-[400px] h-[400px] bg-emerald-600/15 rounded-full blur-[100px]" />
+          {/* Bottom center glow - larger */}
+          <div className="absolute bottom-[-5%] left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-emerald-600/25 rounded-full blur-[140px]" />
+          {/* Ambient teal bottom right */}
+          <div className="absolute bottom-[20%] right-[10%] w-[350px] h-[350px] bg-teal-600/15 rounded-full blur-[100px]" />
         </div>
 
         {/* Hero Section */}
@@ -69,8 +73,8 @@ export default function Home() {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/20 to-green-500/20 flex items-center justify-center mb-6">
+              <div className="p-8 rounded-2xl bg-white/[0.03] backdrop-blur-sm border border-white/10 hover:border-emerald-500/30 hover:bg-white/[0.05] transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500/30 to-green-500/20 flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/20">
                   <BarChart3 className="h-6 w-6 text-emerald-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-3">Team Analytics</h3>
@@ -79,8 +83,8 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-teal-500/20 flex items-center justify-center mb-6">
+              <div className="p-8 rounded-2xl bg-white/[0.03] backdrop-blur-sm border border-white/10 hover:border-green-500/30 hover:bg-white/[0.05] transition-all duration-300 hover:shadow-lg hover:shadow-green-500/10">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/30 to-teal-500/20 flex items-center justify-center mb-6 shadow-lg shadow-green-500/20">
                   <Zap className="h-6 w-6 text-green-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-3">Activity Tracking</h3>
@@ -89,8 +93,8 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500/20 to-emerald-500/20 flex items-center justify-center mb-6">
+              <div className="p-8 rounded-2xl bg-white/[0.03] backdrop-blur-sm border border-white/10 hover:border-teal-500/30 hover:bg-white/[0.05] transition-all duration-300 hover:shadow-lg hover:shadow-teal-500/10">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500/30 to-emerald-500/20 flex items-center justify-center mb-6 shadow-lg shadow-teal-500/20">
                   <TrendingUp className="h-6 w-6 text-teal-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-3">Revenue Insights</h3>

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FieldGroup, Field, FieldLabel } from '@/components/ui/field'
 import { Spinner } from '@/components/ui/spinner'
-import { Building2, User, ArrowRight, Check } from 'lucide-react'
+import { Building2, User, ArrowRight, Check, Chrome } from 'lucide-react'
 import { MarketingNav } from '@/components/marketing-nav'
 
 type Step = 'company' | 'profile' | 'complete'
@@ -21,7 +21,6 @@ export default function OnboardingPage() {
   const [companyName, setCompanyName] = useState('')
   const [companySlug, setCompanySlug] = useState('')
   const [name, setName] = useState('')
-  const [extensionToken, setExtensionToken] = useState('')
 
   const handleCancel = async () => {
     const supabase = createClient()
@@ -81,7 +80,6 @@ export default function OnboardingPage() {
         return
       }
 
-      setExtensionToken(result.extension_token)
       setStep('complete')
     } catch {
       setError('An unexpected error occurred')
@@ -90,17 +88,14 @@ export default function OnboardingPage() {
     }
   }
 
-  const copyToken = () => {
-    navigator.clipboard.writeText(extensionToken)
-  }
-
   return (
-    <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Gradient fog background */}
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Gradient fog background - layered glows */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-600/25 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[-10%] left-[20%] w-[400px] h-[300px] bg-green-700/15 rounded-full blur-[80px]" />
-        <div className="absolute top-[40%] right-[-5%] w-[300px] h-[300px] bg-teal-600/15 rounded-full blur-[80px]" />
+        <div className="absolute top-[-10%] left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-emerald-500/30 rounded-full blur-[130px]" />
+        <div className="absolute bottom-[-10%] left-[15%] w-[500px] h-[400px] bg-green-600/20 rounded-full blur-[100px]" />
+        <div className="absolute top-[35%] right-[-5%] w-[400px] h-[400px] bg-teal-500/20 rounded-full blur-[100px]" />
+        <div className="absolute top-[60%] left-[30%] w-[300px] h-[300px] bg-emerald-600/15 rounded-full blur-[80px]" />
       </div>
       <MarketingNav cancelLabel="Cancel setup" onCancel={handleCancel} />
       <main className="flex items-center justify-center p-4 pt-12 relative z-10">
@@ -115,7 +110,7 @@ export default function OnboardingPage() {
           </div>
 
           {step === 'company' && (
-            <div className="p-8 rounded-2xl bg-white/5 border border-white/10">
+            <div className="p-8 rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/10 shadow-xl shadow-emerald-900/10">
               <div className="text-center mb-8">
                 <div className="mx-auto w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
                   <Building2 className="h-6 w-6 text-emerald-400" />
@@ -159,7 +154,7 @@ export default function OnboardingPage() {
           )}
 
           {step === 'profile' && (
-            <div className="p-8 rounded-2xl bg-white/5 border border-white/10">
+            <div className="p-8 rounded-2xl bg-white/[0.04] backdrop-blur-sm border border-white/10 shadow-xl shadow-emerald-900/10">
               <div className="text-center mb-8">
                 <div className="mx-auto w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
                   <User className="h-6 w-6 text-green-400" />
@@ -198,26 +193,25 @@ export default function OnboardingPage() {
           )}
 
           {step === 'complete' && (
-            <div className="p-8 rounded-2xl bg-white/5 border border-white/10">
-              <div className="text-center mb-8">
-                <div className="mx-auto w-12 h-12 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
-                  <Check className="h-6 w-6 text-emerald-400" />
-                </div>
-                <h1 className="text-2xl font-semibold text-white mb-2">You&apos;re All Set!</h1>
-                <p className="text-white/60">Your account is ready. Here&apos;s your extension token to get started.</p>
+            <div className="p-8 rounded-2xl bg-white/5 border border-white/10 text-center">
+              <div className="mx-auto w-14 h-14 rounded-full bg-emerald-500/20 flex items-center justify-center mb-6">
+                <Check className="h-7 w-7 text-emerald-400" />
               </div>
-              <div className="bg-white/5 border border-white/10 rounded-lg p-4 mb-6">
-                <p className="text-xs text-white/40 mb-2">Extension Token</p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 text-sm font-mono text-white break-all">{extensionToken}</code>
-                  <Button size="sm" variant="outline" onClick={copyToken} className="border-white/20 text-white hover:bg-white/10">Copy</Button>
-                </div>
-              </div>
-              <p className="text-sm text-white/50 text-center mb-6">
-                Install the KEVI Chrome extension and paste this token to start tracking your activity.
+              <h1 className="text-2xl font-semibold text-white mb-3">Your account is set up</h1>
+              <p className="text-white/60 mb-8 leading-relaxed">
+                Install the KEV.io Chrome extension and sign in with your email and password to start tracking.
               </p>
-              <Button className="w-full bg-white hover:bg-white/90 text-black border-0 font-semibold" onClick={() => router.push('/dashboard')}>
-                Go to Dashboard <ArrowRight className="ml-2 h-4 w-4" />
+              <a
+                href="https://chrome.google.com/webstore"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full bg-white hover:bg-white/90 text-black font-semibold rounded-lg px-6 py-3 transition-colors mb-3"
+              >
+                <Chrome className="h-5 w-5" />
+                Install Chrome Extension
+              </a>
+              <Button variant="ghost" className="w-full text-white/60 hover:text-white hover:bg-white/10" onClick={() => router.push('/dashboard')}>
+                Go to Dashboard
               </Button>
             </div>
           )}

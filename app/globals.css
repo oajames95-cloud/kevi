@@ -4,40 +4,40 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Dark theme by default - Superhuman inspired with emerald/forest/bottle green */
-  --background: oklch(0 0 0);
-  --foreground: oklch(1 0 0);
-  --card: oklch(0.12 0 0);
-  --card-foreground: oklch(1 0 0);
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(1 0 0);
-  --primary: oklch(0.55 0.18 155);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.18 0 0);
-  --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.18 0 0);
+  /* Dark theme - softer black with emerald/forest green accents */
+  --background: oklch(0.08 0.005 160);
+  --foreground: oklch(0.98 0 0);
+  --card: oklch(0.12 0.008 160);
+  --card-foreground: oklch(0.98 0 0);
+  --popover: oklch(0.12 0.008 160);
+  --popover-foreground: oklch(0.98 0 0);
+  --primary: oklch(0.65 0.2 155);
+  --primary-foreground: oklch(0.08 0 0);
+  --secondary: oklch(0.16 0.01 160);
+  --secondary-foreground: oklch(0.98 0 0);
+  --muted: oklch(0.16 0.01 160);
   --muted-foreground: oklch(0.65 0 0);
-  --accent: oklch(0.18 0 0);
-  --accent-foreground: oklch(1 0 0);
+  --accent: oklch(0.18 0.02 155);
+  --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.25 0 0);
-  --input: oklch(0.18 0 0);
-  --ring: oklch(0.55 0.18 155);
-  --chart-1: oklch(0.55 0.18 155);
-  --chart-2: oklch(0.65 0.2 165);
+  --border: oklch(0.22 0.015 160);
+  --input: oklch(0.14 0.01 160);
+  --ring: oklch(0.65 0.2 155);
+  --chart-1: oklch(0.65 0.2 155);
+  --chart-2: oklch(0.70 0.18 165);
   --chart-3: oklch(0.60 0.15 170);
   --chart-4: oklch(0.70 0.2 60);
   --chart-5: oklch(0.6 0.2 200);
-  --radius: 0.5rem;
-  --sidebar: oklch(0.08 0 0);
-  --sidebar-foreground: oklch(1 0 0);
-  --sidebar-primary: oklch(0.55 0.18 155);
-  --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.18 0 0);
-  --sidebar-accent-foreground: oklch(1 0 0);
-  --sidebar-border: oklch(0.25 0 0);
-  --sidebar-ring: oklch(0.55 0.18 155);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.06 0.005 160);
+  --sidebar-foreground: oklch(0.98 0 0);
+  --sidebar-primary: oklch(0.65 0.2 155);
+  --sidebar-primary-foreground: oklch(0.08 0 0);
+  --sidebar-accent: oklch(0.14 0.01 160);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.20 0.01 160);
+  --sidebar-ring: oklch(0.65 0.2 155);
 }
 
 .dark {
@@ -123,5 +123,65 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Status color classes */
+  .status-green {
+    @apply text-emerald-400 bg-emerald-500/10;
+  }
+  .status-orange {
+    @apply text-orange-400 bg-orange-500/10;
+  }
+  .status-red {
+    @apply text-red-400 bg-red-500/10;
+  }
+
+  /* Bar colors - no greys or blacks, always vibrant */
+  .bar-green {
+    @apply bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-lg shadow-emerald-500/30;
+  }
+  .bar-orange {
+    @apply bg-gradient-to-r from-orange-500 to-orange-400 shadow-lg shadow-orange-500/30;
+  }
+  .bar-red {
+    @apply bg-gradient-to-r from-red-500 to-red-400 shadow-lg shadow-red-500/30;
+  }
+
+  /* Multi-rep rainbow bars */
+  .bar-multi-1 {
+    @apply bg-gradient-to-r from-emerald-500 to-emerald-400 shadow-emerald-500/20;
+  }
+  .bar-multi-2 {
+    @apply bg-gradient-to-r from-teal-500 to-teal-400 shadow-teal-500/20;
+  }
+  .bar-multi-3 {
+    @apply bg-gradient-to-r from-cyan-500 to-cyan-400 shadow-cyan-500/20;
+  }
+  .bar-multi-4 {
+    @apply bg-gradient-to-r from-blue-500 to-blue-400 shadow-blue-500/20;
+  }
+  .bar-multi-5 {
+    @apply bg-gradient-to-r from-purple-500 to-purple-400 shadow-purple-500/20;
+  }
+  .bar-multi-6 {
+    @apply bg-gradient-to-r from-pink-500 to-pink-400 shadow-pink-500/20;
+  }
+
+  /* Glow shadow effects */
+  .glow-green {
+    @apply shadow-2xl shadow-emerald-500/40;
+  }
+  .glow-orange {
+    @apply shadow-2xl shadow-orange-500/40;
+  }
+  .glow-red {
+    @apply shadow-2xl shadow-red-500/40;
+  }
+
+  /* Card with glow lift */
+  .card-hover {
+    @apply transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/30 hover:-translate-y-1;
   }
 }
