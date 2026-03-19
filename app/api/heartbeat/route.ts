@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { supabaseService } from '@/lib/supabase/service'
 
 // POST /api/heartbeat - Receive heartbeat from Chrome extension
 export async function POST(request: NextRequest) {
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const token = authHeader.slice(7)
     const body = await request.json()
 
-    const supabase = await createClient()
+    const supabase = supabaseService
 
     // Verify token and get rep
     const { data: rep, error: repError } = await supabase

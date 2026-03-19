@@ -1,20 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl
-
-  // Skip middleware for extension API routes — they handle their own auth
-  if (
-    pathname.startsWith('/api/extension-token') ||
-    pathname.startsWith('/api/events') ||
-    pathname.startsWith('/api/heartbeat') ||
-    pathname.startsWith('/api/webhooks') ||
-    pathname.startsWith('/api/live') ||
-    pathname.startsWith('/api/cron')
-  ) {
-    return NextResponse.next()
-  }
+export async function updateSession(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({ request })
 
   let supabaseResponse = NextResponse.next({ request })
 
