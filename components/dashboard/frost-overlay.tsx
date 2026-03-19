@@ -1,15 +1,23 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useSidebar } from '@/components/ui/sidebar'
 
 export function FrostOverlay() {
+  const [mounted, setMounted] = useState(false)
   const { open, openMobile, isMobile, toggleSidebar, setOpenMobile } = useSidebar()
+
+  // Prevent hydration mismatch by only rendering after mount
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // On mobile: show when the sheet drawer is open
   // On desktop: show when the sidebar is expanded (open)
   const visible = isMobile ? openMobile : open
 
-  if (!visible) return null
+  // Don't render anything until mounted to avoid hydration mismatch
+  if (!mounted || !visible) return null
 
   return (
     <div

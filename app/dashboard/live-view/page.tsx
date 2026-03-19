@@ -25,7 +25,13 @@ const REFRESH_INTERVAL = 15000 // 15 seconds auto-refresh
 export default function LiveViewPage() {
   const [data, setData] = useState<LiveViewData | null>(null)
   const [loading, setLoading] = useState(true)
-  const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  // Prevent hydration mismatch by only rendering dates after mount
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const fetchData = useCallback(async () => {
     try {
@@ -90,7 +96,7 @@ export default function LiveViewPage() {
           </div>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">
-              Last updated: {lastRefresh.toLocaleTimeString()}
+              Last updated: {mounted && lastRefresh ? lastRefresh.toLocaleTimeString() : '--:--:--'}
             </span>
             <Button variant="outline" size="sm" onClick={fetchData}>
               <RefreshCw className="h-4 w-4 mr-2" />
@@ -246,10 +252,10 @@ export default function LiveViewPage() {
                     )}
                     
                     {(!rep.status || rep.status.status === 'offline') && (
-                      <div className="text-sm text-muted-foreground">
-                        {rep.last_seen_at 
+                      <div className="text-sm text-muted-foreground" suppressHydrationWarning>
+                        {mounted && rep.last_seen_at 
                           ? `Last seen ${new Date(rep.last_seen_at).toLocaleString()}`
-                          : 'Never connected'
+                          : rep.last_seen_at ? 'Last seen recently' : 'Never connected'
                         }
                       </div>
                     )}
