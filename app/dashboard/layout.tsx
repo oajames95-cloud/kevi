@@ -36,7 +36,7 @@ export default async function DashboardLayout({
             <div className="absolute top-[-5%] right-[10%] w-[400px] h-[300px] bg-emerald-600/10 rounded-full blur-[100px]" />
             <div className="absolute bottom-[10%] left-[5%] w-[300px] h-[300px] bg-teal-600/8 rounded-full blur-[80px]" />
           </div>
-          <div className="relative z-10">
+          <div className="relative z-10" suppressHydrationWarning>
             {children}
           </div>
         </div>
