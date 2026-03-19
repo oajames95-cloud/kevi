@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import { DashboardSidebar } from '@/components/dashboard/sidebar'
 import { DashboardHeader } from '@/components/dashboard/header'
@@ -37,7 +38,9 @@ export default async function DashboardLayout({
             <div className="absolute bottom-[10%] left-[5%] w-[300px] h-[300px] bg-teal-600/8 rounded-full blur-[80px]" />
           </div>
           <div className="relative z-10">
-            {children}
+            <Suspense fallback={<div className="p-8">Loading...</div>}>
+              {children}
+            </Suspense>
           </div>
         </div>
       </SidebarInset>
