@@ -40,13 +40,12 @@ export async function middleware(request: NextRequest) {
 
   if (
     !user &&
-    !pathname.startsWith('/login') &&
     !pathname.startsWith('/auth') &&
     !pathname.startsWith('/onboarding') &&
     !pathname.startsWith('/api')
   ) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = '/auth/login'
     return NextResponse.redirect(url)
   }
 
