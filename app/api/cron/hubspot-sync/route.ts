@@ -55,6 +55,7 @@ async function processDeals(
 
   for (const deal of records) {
     const createdAt = deal.properties.createdate
+    const ownerId = deal.properties.hubspot_owner_id
     
     // Skip if older than last polled time
     if (new Date(createdAt) <= new Date(lastPolledAt)) {
@@ -75,8 +76,18 @@ async function processDeals(
       continue
     }
 
-    // Try to match rep by HubSpot owner email (simplified - would need owner lookup in production)
-    // For now, insert without rep_id - can be matched later
+    // Look up rep_id by matching owner_id against hubspot_owner_id in reps table
+    let repId: string | null = null
+    if (ownerId) {
+      const { data: rep } = await supabaseService
+        .from('reps')
+        .select('id')
+        .eq('hubspot_owner_id', ownerId)
+        .single()
+
+      repId = rep?.id || null
+    }
+
     const { error } = await supabaseService
       .from('crm_events')
       .insert({
@@ -84,14 +95,14 @@ async function processDeals(
         event_type: 'deal_created',
         deal_value: parseFloat(deal.properties.amount) || 0,
         deal_stage: deal.properties.dealstage || null,
+        rep_id: repId,
         payload: {
           hubspot_id: deal.id,
           name: deal.properties.dealname,
-          owner_id: deal.properties.hubspot_owner_id,
+          owner_id: ownerId,
           close_date: deal.properties.closedate,
         },
         occurred_at: createdAt,
-        // rep_id is null - needs to be matched via owner lookup
       })
 
     if (!error) {
@@ -112,6 +123,7 @@ async function processContacts(
 
   for (const contact of records) {
     const createdAt = contact.properties.createdate
+    const ownerId = contact.properties.hubspot_owner_id
     
     // Skip if older than last polled time
     if (new Date(createdAt) <= new Date(lastPolledAt)) {
@@ -132,18 +144,31 @@ async function processContacts(
       continue
     }
 
+    // Look up rep_id by matching owner_id against hubspot_owner_id in reps table
+    let repId: string | null = null
+    if (ownerId) {
+      const { data: rep } = await supabaseService
+        .from('reps')
+        .select('id')
+        .eq('hubspot_owner_id', ownerId)
+        .single()
+
+      repId = rep?.id || null
+    }
+
     const { error } = await supabaseService
       .from('crm_events')
       .insert({
         source: 'hubspot',
         event_type: 'contact_created',
         deal_value: 0,
+        rep_id: repId,
         payload: {
           hubspot_id: contact.id,
           first_name: contact.properties.firstname,
           last_name: contact.properties.lastname,
           email: contact.properties.email,
-          owner_id: contact.properties.hubspot_owner_id,
+          owner_id: ownerId,
         },
         occurred_at: createdAt,
       })
