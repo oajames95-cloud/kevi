@@ -13,11 +13,22 @@ export async function GET(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    // Get current user's company_id via reps table
+    const { data: currentRep } = await supabase
+      .from('reps')
+      .select('company_id')
+      .eq('email', user.email)
+      .single()
+
+    if (!currentRep?.company_id) {
+      return NextResponse.json({ error: 'Company not found' }, { status: 404 })
+    }
+
     // Get company with goals
     const { data: company } = await supabase
       .from('companies')
       .select('id, goals')
-      .eq('user_id', user.id)
+      .eq('id', currentRep.company_id)
       .single()
 
     if (!company) return NextResponse.json({ error: 'Company not found' }, { status: 404 })
